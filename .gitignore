@@ -12,7 +12,7 @@ out/
 build/
 dist/
 
-# Environment Variables
+# Environment Variables & Secrets
 .env
 .env*
 *.env
@@ -23,6 +23,12 @@ dist/
 Backend/.env
 Client/.env*
 
+# Test and scratch files
+test_*.ts
+test_*.js
+*.test.ts
+*.test.js
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
@@ -32,5 +38,6 @@ yarn-error.log*
 # OS & IDE
 .DS_Store
 Thumbs.db
+desktop.ini
 .vscode/
 .idea/

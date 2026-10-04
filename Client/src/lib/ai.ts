@@ -212,7 +212,7 @@ Perform a rigorous, neutral critical-reflection analysis according to your syste
 ${JSON_SCHEMA_INSTRUCTION}`;
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const modelName = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
 
   const model = genAI.getGenerativeModel({
     model: modelName,
@@ -269,15 +269,26 @@ ${JSON_SCHEMA_INSTRUCTION}`;
 }
 
 /**
- * Main AI dispatcher supporting xAI Grok, Google Gemini, and Fallback
+ * Main AI dispatcher supporting Google Gemini, xAI Grok, and Fallback
  */
 export async function analyzeDecisionWithAI(
   request: AnalyzeRequest
 ): Promise<{ result: AnalysisResult; isDemoFallback: boolean }> {
-  const xaiKey = process.env.XAI_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
+  const xaiKey = process.env.XAI_API_KEY;
 
-  // 1. Try xAI Grok if key provided
+  // 1. Try Google Gemini first if key is configured
+  if (geminiKey && geminiKey.trim() !== '' && !geminiKey.includes('your_api_key_here')) {
+    try {
+      console.log('[BlindSpot AI] Querying Google Gemini (gemini-3.8-flash)...');
+      const geminiResult = await analyzeWithGemini(request, geminiKey);
+      return { result: geminiResult, isDemoFallback: false };
+    } catch (geminiError: any) {
+      console.warn('[BlindSpot AI] Gemini call failed:', geminiError?.message || geminiError);
+    }
+  }
+
+  // 2. Try xAI Grok if configured
   if (xaiKey && xaiKey.trim() !== '' && !xaiKey.includes('your_xai_api_key')) {
     try {
       console.log('[BlindSpot AI] Querying xAI Grok...');
@@ -288,18 +299,7 @@ export async function analyzeDecisionWithAI(
     }
   }
 
-  // 2. Try Gemini if configured
-  if (geminiKey && geminiKey.trim() !== '' && !geminiKey.includes('your_api_key_here')) {
-    try {
-      console.log('[BlindSpot AI] Querying Google Gemini...');
-      const geminiResult = await analyzeWithGemini(request, geminiKey);
-      return { result: geminiResult, isDemoFallback: false };
-    } catch (geminiError: any) {
-      console.warn('[BlindSpot AI] Gemini call failed:', geminiError?.message || geminiError);
-    }
-  }
-
-  // 3. Fallback to structured demo reflection mode if allowed or in demo setting
+  // 3. Fallback to structured demo reflection mode if allowed
   if (process.env.ALLOW_DEMO_FALLBACK_ON_API_ERROR !== 'false') {
     console.warn('[BlindSpot AI] Utilizing structured demo reflection fallback.');
     const fallback = getDemoFallbackResponse(request);
