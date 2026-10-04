@@ -1,0 +1,14 @@
+{
+  "name": "blindspot-ai",
+  "version": "1.0.0",
+  "description": "BlindSpot AI - AI-powered decision reflection & critical thinking assistant",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npm --prefix Client run dev",
+    "build": "npm --prefix Client run build",
+    "start": "npm --prefix Client run start"
+  },
+  "keywords": ["ai", "decision-reflection", "gemini", "nextjs"],
+  "author": "BlindSpot AI Team",
+  "license": "ISC"
+}
